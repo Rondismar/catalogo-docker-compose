@@ -1,0 +1,42 @@
+services:
+  postgres:  
+    env_file: .db.env
+    image: postgres:17.5-alpine3.22
+    ports: 
+      - "5432:5432"
+    networks: 
+      - postgres_network 
+#    environment:
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes: 
+      - ./pg_data:/var/lib/postgresql/data
+    restart: always
+
+  pgadmin:
+    env_file: .pgadmin.env
+    image: dpage/pgadmin4
+    ports: 
+      - "8080:80"
+    networks: 
+      - postgres_network
+#    environment: 
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    depends_on: 
+      postgres:
+        condition: service_healthy
+    restart: always
+
+networks: 
+  postgres_network: 
+    driver: bridge
+
+#volumes: 
+#  pg_data:
